@@ -76,21 +76,6 @@ int find_mul_inverse(int key)
         return t % NUMBER_OF_ALPHABET;
 }
 
-// 아스키 코드를 Zn집합 내의 원소로 정규화 및 해제
-void convert_Zn(char *str)
-{
-    for (int i = 0; str[i] != '\0'; i++)
-        str[i] = str[i] - ASCII_BASE;
-    return;
-}
-
-void convert_asc(char *str)
-{
-    for (int i = 0; str[i] != '\0'; i++)
-        str[i] = str[i] + ASCII_BASE;
-    return;
-}
-
 // 덧셈 암호
 void encrypt_add(char *str, int key)
 {
@@ -100,16 +85,12 @@ void encrypt_add(char *str, int key)
         return;
     }
 
-    convert_Zn(str);
-    printf("a : %d\n", str[0]);
     for (int i = 0; str[i] != '\0'; i++)
     {
-        printf("%d ",str[i]);
+        str[i] = str[i] - ASCII_BASE;
         str[i] = (str[i] + key) % NUMBER_OF_ALPHABET;
-        printf("%d\n", str[i]);
+        str[i] = str[i] + ASCII_BASE;
     }
-    printf("end");
-    convert_asc(str);
     return;
 }
 
@@ -122,10 +103,11 @@ void decrypt_add(char *str, int key)
         printf("out of range!\n");
         return;
     }
-
-    convert_Zn(str);
+    
+    //복호화
     for (int i = 0; str[i] != '\0'; i++)
     {
+        str[i] = str[i] - ASCII_BASE;
         str[i] = str[i] - key;
         if (str[i] < 0)
         {
@@ -137,8 +119,8 @@ void decrypt_add(char *str, int key)
             // 양수일 때는 모듈러 연산
             str[i] = str[i] % NUMBER_OF_ALPHABET;
         }
+        str[i] = str[i] + ASCII_BASE;
     }
-    convert_asc(str);
     return;
 }
 
@@ -151,10 +133,12 @@ void encrypt_mul(char *str, int key)
         return;
     }
 
-    convert_Zn(str);
     for (int i = 0; str[i] != '\0'; i++)
+    {
+        str[i] = str[i] - ASCII_BASE;
         str[i] = (str[i] * key) % NUMBER_OF_ALPHABET;
-    convert_asc(str);
+        str[i] = str[i] + ASCII_BASE;
+    }
     return;
 }
 
@@ -167,13 +151,12 @@ void decrypt_mul(char *str, int key)
         return;
     }
 
-    printf("inverse : %d\n", inverse);
-    convert_Zn(str);
     for (int i = 0; str[i] != '\0'; i++)
     {
+        str[i] = str[i] - ASCII_BASE;
         str[i] = (str[i] * inverse) % NUMBER_OF_ALPHABET;
+        str[i] = str[i] + ASCII_BASE;
     }
-    convert_asc(str);
     return;
 }
 
@@ -187,14 +170,12 @@ void encrypt_affine(char *str, int key_mul, int key_add)
         return;
     }
 
-    convert_Zn(str);
     for (int i = 0; str[i] != '\0'; i++)
     {
+        str[i] = str[i] - ASCII_BASE;
         str[i] = (str[i] * key_mul + key_add) % NUMBER_OF_ALPHABET;
-        printf("%d ", str[i]);
+        str[i] = str[i] + ASCII_BASE;
     }
-    printf("\n");
-    convert_asc(str);
     return;
 }
 
@@ -202,45 +183,48 @@ void decrypt_affine(char *str, int key_mul, int key_add)
 {
     int inverse_mul = find_mul_inverse(key_mul);
     int inverse_add = find_add_inverse(key_add);
-    if (inverse_mul == -1)
+    if (inverse_mul == -1 || inverse_add == -1)
     {
         printf("out of range\n");
         return;
     }
 
-    convert_Zn(str);
-    printf("key add : %d, inv mul : %d\n", key_add, inverse_mul);
     for (int i = 0; str[i] != '\0'; i++)
     {
+        str[i] = str[i] - ASCII_BASE;
         str[i] = str[i] - key_add;
         if (str[i] < 0)
             str[i] = str[i] + NUMBER_OF_ALPHABET;
         str[i] = (str[i] * inverse_mul) % NUMBER_OF_ALPHABET;
-        printf("%d ", str[i]);
+        str[i] = str[i] + ASCII_BASE;
     }
-    printf("\n");
-    convert_asc(str);
     return;
 }
 
 int main()
 {
     system("clear");
-    char str[] = "abcdefg";
-    int key = 7;
-    // int key_mul = 7;
-    // int key_add = 2;
-    printf("origin string : %s\n", str);
-    // convert_Zn(str);
-    // for(int i=0;str[i] != '\0'; i++)
-    // {
-    //     printf("%d ",str[i]);
-    // }
-    // convert_asc(str);
-    printf("\n");
-    encrypt_add(str, 7);
+    char str[] = "iamstudent";
+    int key_mul = 7;
+    int key_add = 2;
+    printf("[plain] : %s\n[key for add] : %d\n[key for mul] : %d\n", str, key_add, key_mul);
+    
+    printf("\n[encrypt add]\n");
+    encrypt_add(str, key_add);
     printf("cipher : %s\n", str);
-    decrypt_add(str, 7);
+    decrypt_add(str, key_add);
+    printf("plain : %s\n", str);
+
+    printf("\n[encrypt mul]\n");
+    encrypt_mul(str, key_mul);
+    printf("cipher : %s\n", str);
+    decrypt_mul(str, key_mul);
+    printf("plain : %s\n", str);
+
+    printf("\n[encrypt affine]\n");
+    encrypt_affine(str, key_mul, key_add);
+    printf("cipher : %s\n", str);
+    decrypt_affine(str, key_mul, key_add);
     printf("plain : %s\n", str);
     return 0;
 }
