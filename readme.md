@@ -24,19 +24,19 @@ key : 사전에 약속된 value
    3. 암호 해독 시간 > 정보의 유효 기간이 되도록  
    4. Kerckhoffs : 암호 알고리즘보단 키의 비밀 지키자  
 
-- symmetric key
+- symmetric key  
 대치 암호  
    단일 문자 대치 : 덧셈, 곱셈, 아핀  
-   다중 문자 대치 : 자동 키, Vigenere, hill, Rotor
+   다중 문자 대치 : 자동 키, Vigenere, hill, Rotor  
 전치 암호 : rail fence, 열 전치  
 
 - asymmetry key : public & private key
-   - message encrypt
+   - message encrypt  
       public -> encryption  
-      private -> decryption
-   - Electronic signature, authentication
-      public -> decryption  
-      private -> encryption
+      private -> decryption  
+   - Electronic signature, authentication  
+      public -> decryption    
+      private -> encryption  
 
 ### 정수론
 이상, 이하 - [ ],  초과, 미만 - ( )
