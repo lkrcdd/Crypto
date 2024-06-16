@@ -1,6 +1,6 @@
 # cryptography
 
-### overall concept
+# overall concept
 - 용어  
 plain text : 평문, 원본 데이터  
 cipher text : 암호문  
@@ -24,20 +24,33 @@ key : 사전에 약속된 value
    3. 암호 해독 시간 > 정보의 유효 기간이 되도록  
    4. Kerckhoffs : 암호 알고리즘보단 키의 비밀 지키자  
 
-- symmetric key  
-대치 암호  
-   단일 문자 대치 : 덧셈, 곱셈, 아핀  
-   다중 문자 대치 : 자동 키, Vigenere, hill, Rotor  
-전치 암호 : rail fence, 열 전치  
+- 암호 관계도
+1. symmetric key
+   Block Cipher
+      Substitution Cipher
+      Transposition Cipher
+   Stream Cipher
+      Substitution Cipher
+2. asymmetric key
+   public key 
+   private key
 
-- asymmetic key : public & private key
-   - message encrypt  
-      public -> encryption  
-      private -> decryption  
-   - Electronic signature, authentication  
-      public -> decryption    
-      private -> encryption  
+- Substitution Cipher의 종류
+단일 문자 대치 : 덧셈, 곱셈, 아핀  
+다중 문자 대치 : 자동 키, Vigenere, hill, Rotor  
 
+- Transposition Cipher의 종류
+rail fence, 열 전치  
+
+- asymmetic key의 2 가지 용도
+1) message encrypt  
+   public -> encryption  
+   private -> decryption  
+2) Electronic signature, authentication  
+   public -> decryption    
+   private -> encryption  
+
+- 연산 기호
 이상, 이하 - [ ],  초과, 미만 - ( )  
 특정 연산 == @  
 
@@ -53,6 +66,8 @@ key : 사전에 약속된 value
       -> 곱셈에 대한 역원을 갖는 원소 집합을 사용해야 함.  
       -> 확장 유클리드 알고리즘을 이용하여 구할 수 있다.  
 
+
+# 수학적 구조
 ### identity / inverse
 - identity  
 x @ y = x 인 원소 y  
@@ -152,7 +167,7 @@ ex | GF(2)
    Zp = {0, 1}
    operator= + & x, inverse exist(o 제외) (+,- == XOR)(x, % == AND)
 
-### GF(2^n) for bit operation
+- GF(2^n) -> 비트 연산을 위한 Galois Field
 computing 시 사용하는 n bit word에 대한 연산을 정의하기 위한 set
 정수 -> n bits의 block으로 저장 -> 0~2^n-1 -> need modulo 2^n
 
@@ -206,7 +221,25 @@ mul inverse : axb ≡ 1 (mod n) -> a*b = n의 배수 + 1
    -> ex euclidean으로 판별
       sn + at = 1을 만족하는 t == b(mul inverse)
 
-### symmetric key
+# 암호 구조
+다시보는 암호 관계도
+1. symmetric key
+   Block Cipher
+      Substitution Cipher
+      Transposition Cipher
+   Stream Cipher
+      Substitution Cipher
+2. asymmetric key
+   public key 
+   private key
+
+* 대칭 키 : 빠름. 위험
+비대칭 키 : 느림. 안전
+대칭 키로 P 암호화 -> 비대칭 키로 대칭 키를 암호화
+=> 현대방식
+
+
+### 고전 symmetric key 암호들
 대칭 키 -> en/decrypt에 같은 키
 이를 위해 모듈러 연산이 필요.
 
@@ -245,7 +278,8 @@ block cipher : 일부 고전 암호 + 모든 현대 암호
 1. rail fence : 키 없음. 지그재그
 2. 열 전치 : 키 있음
 
-### block cipher
+### p-box, s-box
+- 현대 블록 암호
 n bit 단위 분할. 남으면 padding.
 k bit symmetric key.
 decrypt func = (encrypt func)^-1
@@ -280,10 +314,6 @@ s-box table 별표
 - swap 
 - split and combine
 
-Confusion : 암호문에서 키를 알아내기 어렵게 하는 성질
-Diffusion : 암호문에서 원본 메세지를 알아내기 어렵게 하는 성질
-Error Propagation : 전송 과정에서 발생한 bit error가 복호화 시 얼마나 영향을 미치는지
-
 - mode of operation
 ECB : Electronic Codebook
    P -> n bit block * N개로 분할 with padding
@@ -313,126 +343,306 @@ counter들가는거 외엔 걍 읽어보면댐
 독립적 -> 동기식 스트림
 요약및비교 위주로 정리
 
-
-
-### DES
-Data Encryption Standard. 64bit 블록 암호
-key 56bit + parity_check 8bit = 64bit
-16 round : 16번 encrypt. 역순으로 decrypt
-
-- component
-IP : Initial Permutation, 초기 순열
-f_K :각 bit별 transposition와 substitution 연산 수행 함수 -> key 사용
-SW : swap func
-
-- En/Decrypt process
-Ciphertext = IP^-1(f_K2(SW(f_K1(IP(Plaintext)))))
-Plaintext = IP^-1(f_K1(SW(f_K2(IP(Ciphertext)))))
-
-- key generation
-10bit main key k -> 8bit sub key k1, k2 
-
-p-box : permutation box. permutation principle. 
-ex p10   //permutation. length 10
-   input : 1 2 3 4 5 6 7 8 9 10     //input permutation
-   output : 3 5 2 7 4 10 1 9 8 6    //output permutation일 때,
-   P10 (1010000010) -> (1000001100)    //를 해석해라.
-   첫 원소 input 1, output 3
-   => input permutaion의 1번째 bit가 output permutaion의 3번째 bit로 간다.
-
-축소 p-box : input n bit, output m bit (n>m). 일부 비트 소실
-ex p8
-   input : 10 bit
-   output : 8 bit
-
-LS-1 : 1bit Circular Left Shift
-
-- process
-10bit key -> p10 -> 5bit ls-1, 5bit ls-1 독립적 수행 -> 합병 -> p8 -> k1
-10bit key -> p10 -> 5bit ls-1, 5bit ls-1 독립적 수행 -> 합병 -> p8 -> k1
-
-- IP process
-M = (IP-1(IP(M))) -> 하나마나. 기억하지말래
-
-- f_K *도면의 해석 중요
-transposition & substitution연산 수행
-input : 8bit word, Left most & Right most
-fK = ( L XOR F( R, SK ), R )
-여기서 SK는 Sub Key로서, K1 또는 K2
-
-### AES
-
-### 합성암호
-대치, 치환, 그리고 기타의 구성요소들을 결합한 복합적인 암호
-설계된 블록 암호가 혼돈과 확산의 성질을 갖도록 함
-즉, 현대 블록암호는 합성 암호 체계로 설계됨
-설계 요소
-암호문을 더욱 난수처럼(= 유사 난수) 생성되게 함 -> 패턴 은닉
-암호문과 평문 사이의 관계를 더욱 알아내기 힘들게 함 (→ 확산)
-라운드 수의 증가는 라운드 키의 개수를 증가시킴으로써 암호문과 키의 관계를 유추하기 어렵게 함 (→ 혼돈)
-
-혼돈(Confusion)
+### Confusion, Diffusion
+- 혼돈(Confusion)
 • 암호문과 키의 관계를 숨김
 • 이에 따라, 공격자가 암호문을 이용하여 키를 찾는 것을 불가능하게 함
-• 암호문을 이용하여 키를 찾고자 하는 공격을 어렵게 하기 위해 키의 단일
-비트가 변하면 암호문의 거의 모든 비트들이 변하게 함
+• 암호문을 이용하여 키를 찾고자 하는 공격을 어렵게 하기 위해 키의 단일 비트가 변하면 암호문의 거의 모든 비트들이 변하게 함
 
-확산(Diffusion)
+- 확산(Diffusion)
 • 암호문과 평문 사이의 관계를 숨김
 • 통계 테스트를 사용하여 암호문에 대한 평문을 찾는 공격을 어렵게 함
-✓암호문의 각각의 비트나 문자가 평문의 모든 비트나 특정 비트에 의하여
-종속적으로 결정되도록 함.
-✓예를 들면, 평문의 단일 비트가 바뀐다면, 암호문에 있는 특정 비트 또는
-모든 비트가 바뀌게 구성함.
+• 암호문의 각각의 비트나 문자가 평문의 모든 비트나 특정 비트에 의하여 종속적으로 결정되도록 함.
+ex| 평문의 단일 비트가 바뀐다면, 암호문에 있는 특정 비트 또는 모든 비트가 바뀌게 구성함.
 
-상기 두 성질은 단 한개의 bit만 변하더라도 최대한 많은 bit가 바뀌도록 설계한 성질
+* 상기 두 성질은 단 한개의 bit만 변하더라도 최대한 많은 bit가 바뀌도록 설계한 성질
 
-라운드(Rounds)
-하나의 합성 암호 체계.
-각 라운드 별 서브키 사용
-• 혼돈과 확산은 S-박스와 P-박스 그리고 기타 구성 요소들을 결합하는
-합성 암호를 반복적으로 사용하여 구현됨.
-• 이 때, 반복적으로 사용되는 합성 암호를‘라운드’라 함.
-• 각 라운드에서는
-• 키로부터 키 스케줄(==키 생성 알고리즘)을 통하여 생성된 서로 다른
-라운드키(서브키)를 사용함.
-• 이 때, 각 라운드에서 생성되는 값을 중간 상태 값(middle text)이라 함.
+- 합성 암호 구조
+대치(s-box), 치환(p-box), 기타 구성요소들을 결합한 복합적인 암호 구조
+confusion과 diffusion을 갖춘 블록 암호 = 합성 암호 구조로 설계된 블록 암호 = 현대 블록 암호
 
-Feistel 암호
-➢역함수가 존재하는 구성요소와 역함수가 존재하지 않는 구성요소
-모두를 사용하여 설계(e.g., DES)
-아래와 같이 세 가지 타입의 요소(element)로 구성됨.
- 자기 자신을 역으로 갖는 것(self-invertible)
- 역함수가 존재하는 것(invertible)
- 역함수가 존재하지 않는 것(noninvertible) -> 복호화는 어떻게?
- 역이 존재하지 않은 구성요소들을 서로 결합하고, 암호 알고리즘과
-복호 알고리즘에서 동일한 구성요소를 사용함.
-Feistel 암호의 초기 구조
-• 어떻게 역이 존재하지 않은 구성요소로 설계한 암호 알고리즘과 복호 알고리즘
-이 서로 역관계가 될 수 있는가?
-• 암호알고리즘에서 역함수가 존재하지 않는 구성요소의 효과가 복호화 알고리
-즘에서 상쇄되도록 함.
-• (예) 배타적 논리합(XOR)을 사용
-• 암호화 : C1 = P1  f(K)
-• 복호화 : P2 = C2  f(K) = P1  f(K)  f(K) = P1
-• Feistel 구조에서 믹서는 자기 자신을 역함수로 갖음
+### Feistel
+- 라운드(Rounds)
+암호화 반복 적용 횟수.
+합성 암호 구조로 설계된 암호화 알고리즘을 반복적으로 적용하여 confusion과 diffusion의 효과 극대화.
+각 Round는 서로 다른 key(round key, sub key) 사용.
+각 Round를 거쳐 나온 중간 결과는 middle text.
 
-Non-Feistel 암호 (AES)
-➢역함수가 존재하는 구성요소만을 사용하여 설계(e.g., AES)
- Non-Feistel 암호란?
-• 역함수가 존재하는 요소만을 사용하여 설계
-• 암호화를 구성하는 각 요소는 복호화를 구성하는 각 요소에 대응됨
- 주요 특징
-• S-Box는 적절하게 동일한 입출력 개수를 가져야 함
-• 축소 혹은 확장 P-박스는 역함수가 존재하지 않기 때문에 사용할 수 없음
-• 평문이 반씩 분할될 필요 없음
-• XOR, 역이 존재하는 2 x 2 S-Box, 역이 존재하는 단순 P-박스만을 구성요
-소로 이용
-• 복호화에는 라운드 키를 역순으로 이용
+- Feistel Network
+입력 분할
+한쪽에 Round func를 적용한 후 다른 한 쪽과 XOR, 이 과정을 Round 수 만큼 반복
+
+- None feistal network
+Feistel 구조가 아닌 모든 암호화 구조.
+각 변환 또는 변환들의 군은 자신의 역변환을 갖는다.
+암호와 역암호는 이 연산들이 서로 상쇄되는 방식으로 사용한다.
+라운드 키 역시 역순서로 사용한다.
+ex| Substitution-Permutation Network
+Substitution, Permutation Mixing을 Round 수 만큼 반복
+
+### 현대 스트림 암호
+개요 : feature
+구성 원리
+현블암과의 차이점?
+shift register
+RC4 & A5/1 알고리즘
+
+##### feature
+- component
+P = p_n ... p_1
+K = k_n ... k_1
+C = c_n ... c_1
+
+- feature
+past then block cipher
+하드웨어 구현이 블록 암호보다 용이함
+이진 스트림 단위의 암호화 시
+고정된 속도로 암호화된 데이터를 전송 시
+전송 도중 비트의 변조에 
+
+- key stream 종류
+Synchronous Stream Ciphers
+   독립적인 key stream generation. 
+   ex| one time pad, FSR
+Nonsynchronous Stream Ciphers
+   key stream의 각 bit는 이전의 P나 C에 종속적으로 결정됨.
+   ex| OFB, CTR
+
+##### one time pad
+f(p,k) = p xor k = c
+각 bit에 대해 XOR 연산
+g(p,k) == f(p,k)
+XOR XOR = 자기 자신
+
+##### FSR
+순환 쉬프트 레지스터의 원리를 이용한 key generator
+![alt text](images/image2.png)
+
+LFSR : Feedback func가 Linear함.
+-> 순환 시프팅이므로 키 스트림 해독 가능
+NLFSR : None Linear FSR. 
+-> 수학모델이 정립되지 않아서 많이 사용되지 않음 -> 신뢰성이 없음
+* 선형성 : input과 output간의 관계가 1차 함수 형태
+
+##### RC4
+* 도면해석, pseudo code 중요
+Byte 단위 En/Decrypt
+-> 1Byte P xor 1Byte K = 1Byte C
+256 Byte의 State 배열과 초기 key값으로 key stream 생성
+
+- pseudo code
+1. state와 키 스트림 초기화
+// 초기 state와 초기 key값 배열 생성
+// 초기 key값(키 스트림을 생성하는 키)는 아무거나 ㄱㅊ
+for i in range(0~255)
+{
+   S[i] = i
+   K[i] = Key[i mod KeyLength]
+}  
+j = 0
+for i in range(0~255)
+{
+   j = (j + S[i] + K[i]) mod 256
+   swap(S[i], S[j])
+}  //state 배열 mixing
+
+2. 키 스트림 생성.
+i = 0, j = 0
+while(more byte to encrypt)
+{
+   i = (i+1) mod 256
+   j = (j + S[i]) mod 256
+   swap(S[i], S[j])
+   // 각 key Byte를 뽑을 때 마다 mixing한다.
+   k = S[ S[i]+S[j] mod 256 ]
+}
+
+- feature
+속도 빠름. 실제로 데이터 통신 측에서 많이 쓰임
+key 크기가 16Byte 이상이면 안전
+
+* Tip.
+로그인기능 구현 시 비밀번호 암호화 가능 -> 포트폴리오 프로젝트 시 사용 하기
+비번입력받기 -> rc4암호화 -> db에 전송&저장
+개인정보도 암호화해서 다룰 수 있다.
+각 세션마다 다른 키 사용
+
+##### A5/1
+key generator에 LSFR 3개 사용. 각 19bits, 22bits, 23bits.
+key 1bit 생성 전 majority 함수를 실행하여 clocking bit 도출
+-> 해당 clocking bit에 해당하는 LFSR만 shift하여 그 결과를 XOR
+-> XOR 결과가 key bit 하나임.
+이 때 각 LSFR마다 일부 cells만 사용
+clock된다 == shift 수행된다
+
+### DES
+Data Encryption Standard -> 전섭최초 표준화
+64bit block cipher
+symmetric key
+
+- 전체 구조
+![alt text](images/image3.png)
+
+- initial/final permutation box
+서로 역함수 관계인 단순 p-box
+![alt text](images/image4.png)
+
+- 16 Rounds (Feistel)
+각 라운드의 구조.
+f(R, K) = DES function
+![alt text](images/image5.png)
+
+* Encrypt/Decrypt 시 마지막 Round에서는 swap X
+
+DES function의 구조
+![alt text](images/image6.png)
+
+
+- Round Key Generator
+input : 56bit key & 8bit parity bit
+-> compression p box for drop parity
+-> 28bit씩 절반으로 나눔
+-> for all round
+=> 각 조각에 shift left
+=> 모아서 compression p box에 입력
+=> 48bit round key 하나 생성
+=> 라운드 끝날때까지 반복
+output : round key * 16
+
+- feature
+각 라운드의 출력 값의 오른쪽 부분 = 다음 라운드의 출력 값의 왼쪽 부분.
+마지막 라운드에는 스와퍼가 없으므로 R15가 L16이 되지 않고 그대로 R16이 됨.
+s box -> confusion, nonLinear
+p box -> diffusion
+
+- DES 설계 원리
+쇄도 효과 : P 1 bit 변경 -> C n bit 변경
+완비성 효과 : 'C n bit' depend on 'P 1 bit'
+
+- weak key
+all 0, all 1, half 0 1
+-> E_k(E_k(P)) = P
+-> D_k(D_k(C)) = C
+
+- semi-weak key
+6개의 semi-weak key pair, 총 12개
+-> E_k2(E_k1(P)) = P
+각 key로 인해 생성되는 Round key의 경우의 수가 2개.
+
+- possible weak key
+총 48개
+각 key로 인해 생성되는 Round key의 경우의 수가 4개.
+
+- Key Complement
+크기가 256 인 키 집합에서 원소 중의 절반(half)은 나머지 절반의 보수로 표현됨.
+키의 보수는 키에서 각 비트를 거꾸로 함(0을 1로 바꾸거나 1을 0으로 바꾸는 것)으로써 생성됨.
+C = E(K, P), C' = E(K', P') ('=complement)
+-> key space중의 절반인 2^55가지만 체크하고, 나머지는 보수를 취하여 해독
+
+- Double DES
+C = DES(K_2, DES(K_1, P))
+-> key 경우의 수 2^(56*2)
+=> Meet-in-the-Middle Attack은 2^57 정도로 줄일 수 있음
+
+Meet-in-the-Middle Attack
+M = E(K_1, P) = D(K_2, C), middle text가 같음.
+공격 방법
+P, C 탈취 (known plain text atk)
+
+- tripple DES
+P -> En-De-En -> C -> De-En-De -> P
+2 key, 3key 쓸수있음
+
+
+### AES
+구성요소
+용어
+개념
+동작원리
+특성
+역암호
+
+- definition
+Advanced Encryption Standard
+Non-Feistel
+symmetric key
+128bit key
+알고리즘 및 단위 연산이 간단함 -> 저사양 기기에서 사용 가능
+
+- State
+Byte  
+Word = 4 Byte
+Block = 16 Byte
+State = Word Vector = Byte matrix,
+입력과 출력이 State 형태인 암호화 구조
+
+- convert Block to State
+1 Block = 16 Byte vector -> 4 by 4 matrix = state
+1. P를 16진수로 변환, 16Btye 단위에 부족하면 Padding
+2. 첫 인덱스부터 순차적으로 State에 매핑
+
+- Block ~ State index mapping
+block[i] = State[i % 4][i / 4]
+State[i][j] = Block[i+4j]
+
+- Round component
+Input : State
+1. SubBytes
+2. ShiftRows
+3. MixColumns
+4. AddRoundKey
+Output : State
+
+- SubBytes
+non linear subtitution
+각 state 원소(=1 Byte)를 subtitution
+-> 4bit씩 나눠 두 자리 16진수로 변환 후, 16 by 16 table에 의거해 변환
+-> 각 Byte가 독립적으로 subtitution이 수행됨.
+역변환 관계인 InvSubBytes 존재 
+-> table도 역행렬임
+GF(2^8)상에서 대수적인 연산으로 정의 가능
+-> 각 Byte를 Inverse해서 8 by 8 matrix를 곱하고 y를 XOR 한다.
+
+- ShiftRows
+a Byte Permutation
+각 Row별로 Bytes들을 circular shift. 횟수는 Row index
+역변환인 InvShiftRows 존재
+
+- MixColumns
+Byte Mixing, for diffusion
+Byte column * Constant matrix = new Byte column
+compute on GF(2^8)(= 1 Byte) with modulo 10001101
+역변환 InvMixColumns
+-> constatnt matrix도 역행렬이 존재해야 함.
+
+- AddRoundKey
+각 Column에 Round Key를 더함
+역변환 = 자기자신
+
+- key expansion
+= generate round key -> diffusion 노림
+4 word Round key 생성됨 -> word 단위로 적용됨
+![alt text](images/image7.png)
+-> 192/256 cipher key의 경우 위 연산이 6/8개의 word 단위로 이루어짐.
+t_i = SubWord(RotWord(w_i-1)) XOR TCon_i/4
+-> Rcon = Round Constants matrix
+
+- 역암호 = 복호화
+기본 복호화 구조는
+   SubBytes와 ShiftRows의 순서가 바뀐다.
+   이 때 SubBytes = InvSubBytes, ShiftRows = InvShiftRows
+   MixColumns와 AddRoundKey의 순서가 바뀐다.
+   이 때 MixColumns = InvMixColumns
+대체 설계된 복호화 구조는
+   SubBytes와 ShiftRows의 순서가 바뀐다.
+   이 때 SubBytes = InvSubBytes, ShiftRows = InvShiftRows
+   MixColumns = InvMixColumns
+   AddRoundKey = InvAddRoundKey
 
 ### asymmetric key
 
-### cipher attack
+
+# 암호 해독 및 공격
 수동적 공격 : just steal
 능동적 공격 : steal & analysis & attack
 
@@ -511,136 +721,3 @@ Non-Feistel 암호 (AES)
 
 
 
-
-
-
-### 현대 스트림 암호
-- feature
-P = p_n ... p_1
-K = k_n ... k_1
-C = c_n ... c_1
-past then block cipher
-하드웨어 구현이 블록 암호보다 용이함
-
-- usage
-이진 스트림 단위의 암호화 시
-고정된 속도로 암호화된 데이터를 전송 시
-전송 도중 비트의 변조에 
-
-- key stream
-Synchronous : 독립적인 key stream generation
-   Ex| One-time pad, FSR
-Nonsynchronous : 
-
-- one time pad
-f(p,k) = p xor k(각 bit에 대해) = c
-g(p,k) == f(p,k)
-
-- FSR
-Feedback Shift Register
-
-
-- LFSR
-Linear FSR
-
-- NLFSR
-None Linear FSR
-수학모델이 정립되지 않아서 많이 사용되지 않음 -> 신뢰성이 없음
-
-선형성 : input과 output간의 관계가 1차 함수 형태
-
-- RC4
-Byte 단위로 encrypt
-1Byte P xor 1Byte K
-도면해석, pseudo code 중요
-속도 빠름. 실제로 많이 쓰임
-
-Tip.
-로그인기능 구현 시 비밀번호 암호화 가능 -> 포트폴리오 프로젝트 시 사용 하기
-비번입력받기 -> rc4암호화 -> db에 전송&저장
-개인정보도 암호화해서 다룰 수 있다.
-
-- A5/1
-19bits, 22bits, 23bits LSFR 3개를 사용
-각 LSFR마다 일부 cells만 사용
-clock된다 == shift 수행된다
-
-대칭 키 : 빠름. 위험
-비대칭 키 : 느림. 안전
-대칭 키로 P 암호화 -> 비대칭 키로 대칭 키를 암호화
-=> 현대방식
-
-### DES
-- feature
-Data Encryption Standard
-대칭 키
-56 bit key
-2 p-box & 16 Feistel round
-구조 중요(16라운드, 라운드키생성기)(IP, FP 전혀 안중요함)
-p-box 복습
-예제1번 중요
-
-- Round func(DES func)
-f(right side of input word, sub key)
-Des 함수 내부 구조 그림 중요
-Sbox 있는 이유 : 48로 확장되서 출력을 동일한 bit크기로 하기 위해
-s-box : confusion
-
-25p 중요
-의사코드 스킵
-
-
-- Round Key Generator
-input : 56bit key & 8bit parity bit
-output : round key * 16
-component :
-   p-box for remove parity bit. 64bit -> 56bit
-
-
-
-shift할 bit 수는 사전에 합의
-
-DES 설계 원리
-쇄도 효과 : P 1 bit 변경 -> C n bit 변경
-완비성 효과 : C n bit depend on P 1 bit -> P, S box 로 야기된 확산, 혼돈
-
-- 취약점
-1. S-박스의 취약점
-2. P-박스의 취약점
-3. 키의 취약점
-   키의 크기
-      2^56 경우의 수 bruce-force
-   weak key
-      64bit key - 8bit parity 연산 시 모두 0, 모두 1, 반반01인 4개의 56bit key.
-      -> E_k(E_k(P)) = P
-      -> D_k(D_k(C)) = C
-   semi-weak key
-      6개의 semi-weak key pair, 총 12개
-      -> E_k2(E_k1(P)) = P
-      각 key로 인해 생성되는 Round key의 경우의 수가 2개.
-   possible weak key
-      총 48개
-      각 key로 인해 생성되는 Round key의 경우의 수가 4개.
-   Key Complement
-      크기가 256 인 키 집합에서 원소 중의 절반(half)은 나머지 절반의 보수로 표현됨.
-      키의 보수는 키에서 각 비트를 거꾸로 함(0을 1로 바꾸거나 1을 0으로 바꾸는 것)으로써 생성됨.
-      C = E(K, P) == C' = E(K', P')    ('=complement)
-      -> key space중의 절반인 2^55가지만 체크하고, 나머지는 보수를 취하여 해독
-
-- Double DES
-C = DES(K_2, DES(K_1, P))
--> key 경우의 수 2^(56*2)
-=> Meet-in-the-Middle Attack는 2^57 정도로 줄일 수 있음
-
-Meet-in-the-Middle Attack
-M = E(K_1, P) = D(K_2, C), middle text가 같음.
-공격 방법
-P, C 탈취 (known plain text atk)
-
-
-- tripple DES
-P -> En-De-En -> C -> De-En-De -> P
-2 key, 3key 쓸수있음
-
-### AES
-Advanced Encryption Standard
